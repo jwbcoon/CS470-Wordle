@@ -1,34 +1,32 @@
-import Typography from "@mui/material/Typography";
 import {Grid} from "@mui/material";
 import {Box} from "@mui/material";
 import {Fragment} from "react";
-
-import dim from "../../../../Downloads/wordle/wordle/src/utils/dimensions";
+import dim from "../util/dimensions";
 
 const GuessBox = (props) => {
 
-    const {backgroundColor} = props.cellContent;
+    const {bgcolor} = props;
 
     return (
         <Box
             sx={{
                 width: dim.width,
                 height: dim.height,
-                backgroundColor: backgroundColor,
+                bgcolor: bgcolor,
                 border: 1,
                 m: 0.4,
-                padding: 0
+                p: 0
             }}
         >
-
         </Box>
-    )
+    );
 }
 
 const GuessArea = (props) => {
 
     const {allRows} = props;
     const {onClickHandler} = props;
+    const {onKeyDownHandler} = props;
 
     return (
         <Fragment>
@@ -38,10 +36,12 @@ const GuessArea = (props) => {
                         <Grid item xs={1}
                               key={idx}
                               onClick={() => onClickHandler(idx)}
-                              sx={
-                            {margin: 0, padding: 0}
-                        }>
-                            <GuessBox cellContent={box} />
+                              onKeyDown={() => onKeyDownHandler(box.code)}
+                              sx={{
+                                  m: 0,
+                                  p: 0
+                        }}>
+                            <GuessBox bgcolor={box}>{box.char}</GuessBox>
                         </Grid>
                     )
                 }

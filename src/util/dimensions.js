@@ -1,5 +1,5 @@
 
-export default {
+const dimensions = {
     width: 60,
     height: 60,
     hGap: 10,
@@ -8,4 +8,5 @@ export default {
     numGCols: 5,
     topBannerHeight: 200,
     keyboardHeight: 400
-}
+};
+export default dimensions;

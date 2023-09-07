@@ -10,7 +10,7 @@ const Keyboard = () => {
 
             }}>
             <Typography variant='h4'>
-                Keybard
+                Keyboard
             </Typography>
             </Box>
         </Fragment>
