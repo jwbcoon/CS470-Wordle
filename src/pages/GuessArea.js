@@ -32,7 +32,6 @@ const GuessArea = (props) => {
 
     return (
         <Fragment>
-            <input autoFocus={true} onChange={onKeyDownHandler}/>
             <Grid container columns={5}>
                 {
                     allBoxes.map((box, idx) =>

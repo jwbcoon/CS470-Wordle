@@ -32,15 +32,13 @@ function App() {
 
     const [activeRow, setActiveRow] = useState(new Array(dim.numGCols).fill({
         bgcolor: 'white',
-        code: keyCodes.backspace,
-        char: letterMap[keyCodes.backspace]
+        char: ' '
     }));
 
     const remainingRows = new Array((dim.numGRows - 1) * dim.numGCols)
         .fill({
             bgcolor: 'white',
-            code: keyCodes.backspace,
-            char: letterMap[keyCodes.backspace]
+            char: ' '
         });
 
     const allBoxes = [...completedRows, ...activeRow, ...remainingRows];
@@ -54,40 +52,37 @@ function App() {
         const newActiveRow = activeRow.slice();
         newActiveRow[idx] = {
             bgcolor: 'yellow',
-            code: 1234,
-            char: letterMap[keyCodes.backspace]
         }
         setActiveRow(newActiveRow);
     };
 
     const onKeyDownHandler = (event) => {
-        const code = event.target.value;
-        console.log(`Handling key code ${code} at index ${activeIdx}`);
+        const input = event.target.value;
+        console.log(`Handling key code ${input} at index ${activeIdx}`);
         if (activeIdx < activeRow.length) {
-            if (code >= keyCodes.A && code <= keyCodes.Z) {
+            if (input.isArray) {
                 const newActiveRow = activeRow.slice();
                 newActiveRow[activeIdx] = {
                     bgcolor: 'grey',
-                    code: code,
-                    char: letterMap[code]
+                    char: letterMap[input.length - 1]
                 }
                 setActiveRow(newActiveRow);
-                setActiveIdx(activeIdx + 1);
-                console.log(`code is now ${code} and index is now ${newActiveRow[activeIdx + 1]}`);
-                return;
+                setActiveIdx(input.length);
+                console.log(`code is now ${input} and index is now ${newActiveRow[activeIdx + 1]}`);
+                //return;
             }
         }
-        if (code === keyCodes.backspace || code === keyCodes.delete) {
+        /*if (input === keyCodes.backspace || input === keyCodes.delete) {
             const newActiveRow = activeRow.slice();
             newActiveRow[activeIdx] = {
                 bgcolor: 'white',
-                code: code,
-                char: letterMap[code]
+                code: input,
+                char: letterMap[input]
             }
             setActiveRow(newActiveRow);
             if (activeIdx > 0) setActiveIdx(activeIdx - 1);
-            console.log(`code is now ${code} and index is now ${activeIdx > 0 ? activeIdx - 1 : 0}`);
-        }
+            console.log(`code is now ${input} and index is now ${activeIdx > 0 ? activeIdx - 1 : 0}`);
+        }*/
     }
 
 
@@ -105,9 +100,9 @@ function App() {
       }}
       >
           <TopBanner />
+          <input autoFocus={true} onChange={event => onKeyDownHandler(event)}/>
           <GuessArea allBoxes={allBoxes}
                      onClickHandler={idx => onClickHandler(idx)}
-                     onKeyDown={code => onKeyDownHandler(code)}
           />
           <Keyboard />
       </Box>
