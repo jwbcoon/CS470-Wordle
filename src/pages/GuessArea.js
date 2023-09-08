@@ -1,7 +1,27 @@
 import {Grid} from "@mui/material";
 import {Box} from "@mui/material";
-import {Fragment} from "react";
+import {forwardRef, Fragment} from "react";
 import dim from "../util/dimensions";
+
+const GuessInput = forwardRef((props, ref) => {
+
+    const {onKeyDownHandler} = props;
+    const {onBlurHandler} = props;
+
+    return (
+        <input
+        autoFocus={true}
+        style={{
+            position: 'absolute',
+            top: '-9999px',
+            left: '-9999px',
+        }}
+        onKeyDown={code => onKeyDownHandler(code)}
+        onBlur={event => onBlurHandler(event)}
+        ref={ref}
+    />
+    );
+});
 
 const GuessBox = (props) => {
 
@@ -28,9 +48,13 @@ const GuessArea = (props) => {
 
     const {allRows} = props;
     const {onClickHandler} = props;
+    const {onKeyDownHandler} = props;
+    const {onBlurHandler} = props;
+    const {inputRef} = props;
 
     return (
         <Fragment>
+            <GuessInput onKeyDownHandler={onKeyDownHandler} onBlurHandler={onBlurHandler} ref={inputRef}/>
             <Grid container columns={5}>
                 {
                     allRows.map((box, idx) =>

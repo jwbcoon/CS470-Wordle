@@ -1,4 +1,4 @@
-import {Fragment, useState} from "react";
+import {Fragment, useState, useRef} from "react";
 
 import GuessArea from "./pages/GuessArea";
 import Keyboard from "./pages/Keyboard"
@@ -11,20 +11,7 @@ import dim from "./util/dimensions";
 
 function App() {
 
-    const letterMap =  {
-        65: 'A', 66: 'B', 67: 'C', 68: 'D', 69: 'E', 70: 'F', 71: 'G',
-        72: 'H', 73: 'I', 74: 'J', 75: 'K', 76: 'L', 77: 'M', 78: 'N',
-        79: 'O', 80: 'P', 81: 'Q', 82: 'R', 83: 'S', 84: 'T', 85: 'U',
-        86: 'V', 87: 'W', 88: 'X', 89: 'Y', 90: 'Z', 8: ' ', 46: ' ', 13: ' '
-    }
-    const keyCodes = {
-        //https://www.freecodecamp.org/news/javascript-keycode-list-keypress-event-key-codes/
-        A: 65,
-        Z: 90,
-        backspace: 8,
-        delete: 46,
-        enter: 13
-    }
+    const inputRef = useRef(null);
 
     const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
@@ -32,15 +19,13 @@ function App() {
 
     const [activeRow, setActiveRow] = useState(new Array(dim.numGCols).fill({
         backgroundColor: 'white',
-        code: keyCodes.backspace,
-        char: letterMap[keyCodes.backspace]
+        char: ' '
     }));
 
     const remainingRows = new Array((dim.numGRows - 1) * dim.numGCols)
         .fill({
             backgroundColor: 'white',
-            code: keyCodes.backspace,
-            char: letterMap[keyCodes.backspace]
+            char: ' '
         });
 
     const allRows = [...completedRows, ...activeRow, ...remainingRows];
@@ -54,36 +39,48 @@ function App() {
         const newActiveRow = activeRow.slice();
         newActiveRow[idx] = {
             backgroundColor: 'yellow',
-            code: 1234,
-            char: letterMap[keyCodes.backspace]
+            char: activeRow[idx].char
         }
         setActiveRow(newActiveRow);
     };
 
     const onKeyDownHandler = (event) => {
-        const input = event.target.value;
-        console.log(`Handling key code ${input} at index ${activeIdx}`);
+        const key = event.key;
+        console.log(`Handling key ${key} at index ${activeIdx}`);
         if (activeIdx < activeRow.length) {
-            const newActiveRow = activeRow.slice();
-            newActiveRow[activeIdx] = {
-                backgroundColor: 'grey',
-                char: input[input.length - 1]
+            if (key.match(/^([a-z]|[A-Z])$/)) {
+                const newActiveRow = activeRow.slice();
+                newActiveRow[activeIdx] = {
+                    backgroundColor: 'grey',
+                    char: key
+                }
+                setActiveRow(newActiveRow);
+                setActiveIdx(activeIdx < activeRow.length - 1 ? activeIdx + 1 : activeIdx);
+                console.log(`Index is now ${activeIdx + 1}`);
+                return;
             }
-            setActiveRow(newActiveRow);
-            setActiveIdx(input.length);
-            console.log(`code is now ${input} and index is now ${newActiveRow[activeIdx + 1]}`);
-            return;
         }
         if (activeIdx >= 0) {
-            const newActiveRow = activeRow.slice();
-            newActiveRow[activeIdx] = {
-                bgcolor: 'white',
-                char: input[input.length - 1]
+            if (key.match(/(Backspace)|(Delete)/)) {
+                const newActiveRow = activeRow.slice();
+                newActiveRow[activeIdx] = {
+                    backgroundColor: 'white',
+                    char: ' '
+                }
+                setActiveRow(newActiveRow);
+                setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
+                console.log(`Index is now ${activeIdx}`);
+                return;
             }
-            setActiveRow(newActiveRow);
-            setActiveIdx(input.length - 1);
-            console.log(`code is now ${input} and index is now ${activeIdx}`);
         }
+        if (key.match(/(Enter)/)) {
+
+        }
+    }
+
+    const onBlurHandler = event => {
+        console.log('Blur Event! Returning focus...');
+        inputRef.current.focus();
     }
 
 
@@ -100,19 +97,12 @@ function App() {
             mt: 5,
       }}
       >
-          <input
-              type={"text"}
-              autoFocus={true}
-              style={{
-                  position: 'absolute',
-                  top: '-9999px',
-                  left: '-9999px',
-              }}
-              onKeyDown={code => onKeyDownHandler(code)}
-          />
           <TopBanner />
           <GuessArea allRows={allRows}
                      onClickHandler={idx => onClickHandler(idx)}
+                     onKeyDownHandler={event => onKeyDownHandler(event)}
+                     onBlurHandler={event => onBlurHandler(event)}
+                     inputRef={inputRef}
           />
           <Keyboard />
       </Box>
