@@ -26,7 +26,7 @@ function App() {
         enter: 13
     }
 
-    let activeIdx = 0; //index of the GuessArea GuessBox currently being typed into
+    const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
     const completedRows = [];
 
@@ -43,13 +43,13 @@ function App() {
             char: letterMap[keyCodes.backspace]
         });
 
-    const allRows = [...completedRows, ...activeRow, ...remainingRows];
+    const allBoxes = [...completedRows, ...activeRow, ...remainingRows];
 
 
     const onClickHandler = (idx) => {
 
         console.log(`element at idx ${idx} was clicked. 
-                     It contains ${JSON.stringify(allRows[idx])}`)
+                     It contains ${JSON.stringify(allBoxes[idx])}`)
         if(idx > 4) return;
         const newActiveRow = activeRow.slice();
         newActiveRow[idx] = {
@@ -60,30 +60,34 @@ function App() {
         setActiveRow(newActiveRow);
     };
 
-    const onKeyDownHandler = (code) => {
+    const onKeyDownHandler = (event) => {
+        const code = event.target.value;
         console.log(`Handling key code ${code} at index ${activeIdx}`);
-        const newActiveRow = activeRow.slice();
         if (activeIdx < activeRow.length) {
             if (code >= keyCodes.A && code <= keyCodes.Z) {
+                const newActiveRow = activeRow.slice();
                 newActiveRow[activeIdx] = {
                     bgcolor: 'grey',
                     code: code,
                     char: letterMap[code]
                 }
-                activeIdx += 1;
-            }
-        } if (activeIdx > 0) {
-            if (code === keyCodes.backspace || code === keyCodes.delete) {
-                newActiveRow[activeIdx] = {
-                    bgcolor: 'white',
-                    code: code,
-                    char: letterMap[code]
-                }
-                activeIdx -= 1;
+                setActiveRow(newActiveRow);
+                setActiveIdx(activeIdx + 1);
+                console.log(`code is now ${code} and index is now ${newActiveRow[activeIdx + 1]}`);
+                return;
             }
         }
-        setActiveRow(newActiveRow);
-        console.log(`code is now ${code} and index is now ${activeIdx}`);
+        if (code === keyCodes.backspace || code === keyCodes.delete) {
+            const newActiveRow = activeRow.slice();
+            newActiveRow[activeIdx] = {
+                bgcolor: 'white',
+                code: code,
+                char: letterMap[code]
+            }
+            setActiveRow(newActiveRow);
+            if (activeIdx > 0) setActiveIdx(activeIdx - 1);
+            console.log(`code is now ${code} and index is now ${activeIdx > 0 ? activeIdx - 1 : 0}`);
+        }
     }
 
 
@@ -101,9 +105,9 @@ function App() {
       }}
       >
           <TopBanner />
-          <GuessArea allRows={allRows}
+          <GuessArea allBoxes={allBoxes}
                      onClickHandler={idx => onClickHandler(idx)}
-                     onKeyDownHandler={code => onKeyDownHandler(code)}
+                     onKeyDown={code => onKeyDownHandler(code)}
           />
           <Keyboard />
       </Box>

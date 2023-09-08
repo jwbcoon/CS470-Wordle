@@ -6,6 +6,7 @@ import dim from "../util/dimensions";
 const GuessBox = (props) => {
 
     const {bgcolor} = props;
+    const {char} = props;
 
     return (
         <Box
@@ -18,30 +19,31 @@ const GuessBox = (props) => {
                 p: 0
             }}
         >
+            {char}
         </Box>
     );
 }
 
 const GuessArea = (props) => {
 
-    const {allRows} = props;
+    const {allBoxes} = props;
     const {onClickHandler} = props;
     const {onKeyDownHandler} = props;
 
     return (
         <Fragment>
+            <input autoFocus={true} onChange={onKeyDownHandler}/>
             <Grid container columns={5}>
                 {
-                    allRows.map((box, idx) =>
+                    allBoxes.map((box, idx) =>
                         <Grid item xs={1}
                               key={idx}
                               onClick={() => onClickHandler(idx)}
-                              onKeyDown={() => onKeyDownHandler(box.code)}
                               sx={{
                                   m: 0,
                                   p: 0
                         }}>
-                            <GuessBox bgcolor={box}>{box.char}</GuessBox>
+                            <GuessBox bgcolor={box} char={box.char}/>
                         </Grid>
                     )
                 }
