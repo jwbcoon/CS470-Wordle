@@ -28,17 +28,18 @@ const KeyboardLetterBox = (props) => {
 const Keyboard = (props) => {
 
     const {keyboard, onClickCallback} = props;
-    const {demoNumKeys} = props;
+    const numColumns = 10;
 
     return (
         <Fragment>
-            <Grid  container columns={keyboard.length}  // hard-coded value -- this is the number of demo keys
-                   sx={{
-                       width: demoNumKeys * keyboardBoxSizes.width + (demoNumKeys - 1) * keyboardRowsHGap + 200,
-                   }}
+            <Grid container
+                  columns={numColumns}  // hard-coded value -- this is the number of demo keys
+                  sx={{
+                      width: numColumns * keyboardBoxSizes.width + (numColumns - 1) * keyboardRowsHGap + 200,
+                  }}
             >
                 {
-                    keyboard.map((keyAttributes, idx) =>
+                    keyboard.map(row => row.map((keyAttributes, idx) =>
                         <Grid item
                               key={idx}
                               xs={1}
@@ -47,7 +48,7 @@ const Keyboard = (props) => {
                         >
                             <KeyboardLetterBox keyAttributes={keyAttributes}/>
                         </Grid>
-                    )
+                    ))
                 }
             </Grid>
         </Fragment>

@@ -14,22 +14,24 @@ import Keyboard from "./pages/Keyboard";
 
 function App() {
 
-    const demoKeys = 'asdfg', demoNumKeys = demoKeys.length;
+    const keyboardInitKeys = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
+    const keyboardNumKeys = keyboardInitKeys.reduce((accum, ele) => accum + ele.length, 0);
 
     const initialKeyBoard = () => {
-        let keys = demoKeys.split("").map(letter => ({...boxStyleVariants.keyboardUnusedKey, letter: letter}))
-        const backspaceKey = {
+        let keys = keyboardInitKeys
+            .map(row => row.split('').map(letter => ({...boxStyleVariants.keyboardUnusedKey, letter: letter})));
+        const backspaceKey = [{
             ...boxStyleVariants.keyboardUnusedKey, // you should probably create a new variant for backspace and enter keys
             width: 50,
             letter: 'Delete',
             isBackspaceKey: true
-        }
-        const enterKey = {
+        }]
+        const enterKey = [{
             ...boxStyleVariants.keyboardUnusedKey,
             width: 50,
             letter: 'Enter',
             isEnterKey: true
-        }
+        }]
         keys.unshift(backspaceKey);
         keys.push(enterKey);
 
@@ -130,12 +132,20 @@ function App() {
         if (activeIdx >= 0) {
             if (key.match(/(Backspace)|(Delete)/)) {
                 const newActiveRow = activeRow.slice();
-                newActiveRow[activeIdx] = {
-                    color: 'white',
-                    letter: ' '
+                if (activeRow[activeIdx].letter !== ' ') { //if the current space is not blank, delete it
+                    newActiveRow[activeIdx] = {
+                        color: 'white',
+                        letter: ' '
+                    }
+                }
+                else {
+                    newActiveRow[activeIdx - 1] = { //if the current space is blank, delete the previous space
+                        color: 'white',
+                        letter: ' '
+                    }
+                    setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
                 }
                 setActiveRow(newActiveRow);
-                setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
                 console.log(`Index is now ${globalActiveIdx}`);
                 return;
             }
@@ -179,7 +189,7 @@ function App() {
                      inputRef={inputRef}
           />
           <MessageCenter/>
-          <Keyboard keyboard={initialKeyBoard()} demoNumKeys={demoNumKeys} onClickCallback={keyboardKeyPressedCallBack} />
+          <Keyboard keyboard={initialKeyBoard()} keyboardNumKeys={keyboardNumKeys} onClickCallback={keyboardKeyPressedCallBack} />
       </Box>
     </Fragment>
   );

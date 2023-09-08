@@ -68,7 +68,7 @@ const GuessArea = (props) => {
                   }}
             >
                 {
-                    allBoxes.map((box, idx) =>
+                    allBoxes.map((elementAttributes, idx) =>
                         <Grid item xs={1}
                               key={idx}
                               onClick={() => onClickHandler(idx)}
@@ -76,7 +76,7 @@ const GuessArea = (props) => {
                                   m: 0,
                                   p: 0
                         }}>
-                            <LetterBox boxAttributes={allBoxes}/>
+                            <LetterBox boxAttributes={elementAttributes}/>
                         </Grid>
                     )
                 }
