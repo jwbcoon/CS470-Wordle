@@ -5,19 +5,21 @@ import dim from "../util/dimensions";
 
 const GuessBox = (props) => {
 
-    const {bgcolor} = props;
+    const {backgroundColor} = props;
+    const {char} = props;
 
     return (
         <Box
             sx={{
                 width: dim.width,
                 height: dim.height,
-                bgcolor: bgcolor,
+                backgroundColor: backgroundColor,
                 border: 1,
                 m: 0.4,
                 p: 0
             }}
         >
+            {char}
         </Box>
     );
 }
@@ -26,7 +28,6 @@ const GuessArea = (props) => {
 
     const {allRows} = props;
     const {onClickHandler} = props;
-    const {onKeyDownHandler} = props;
 
     return (
         <Fragment>
@@ -36,12 +37,11 @@ const GuessArea = (props) => {
                         <Grid item xs={1}
                               key={idx}
                               onClick={() => onClickHandler(idx)}
-                              onKeyDown={() => onKeyDownHandler(box.code)}
                               sx={{
                                   m: 0,
                                   p: 0
                         }}>
-                            <GuessBox bgcolor={box}>{box.char}</GuessBox>
+                            <GuessBox backgroundColor={box} char={box.char}/>
                         </Grid>
                     )
                 }

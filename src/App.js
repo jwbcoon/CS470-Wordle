@@ -26,19 +26,19 @@ function App() {
         enter: 13
     }
 
-    let activeIdx = 0; //index of the GuessArea GuessBox currently being typed into
+    const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
     const completedRows = [];
 
     const [activeRow, setActiveRow] = useState(new Array(dim.numGCols).fill({
-        bgcolor: 'white',
+        backgroundColor: 'white',
         code: keyCodes.backspace,
         char: letterMap[keyCodes.backspace]
     }));
 
     const remainingRows = new Array((dim.numGRows - 1) * dim.numGCols)
         .fill({
-            bgcolor: 'white',
+            backgroundColor: 'white',
             code: keyCodes.backspace,
             char: letterMap[keyCodes.backspace]
         });
@@ -53,37 +53,37 @@ function App() {
         if(idx > 4) return;
         const newActiveRow = activeRow.slice();
         newActiveRow[idx] = {
-            bgcolor: 'yellow',
+            backgroundColor: 'yellow',
             code: 1234,
             char: letterMap[keyCodes.backspace]
         }
         setActiveRow(newActiveRow);
     };
 
-    const onKeyDownHandler = (code) => {
-        console.log(`Handling key code ${code} at index ${activeIdx}`);
-        const newActiveRow = activeRow.slice();
+    const onKeyDownHandler = (event) => {
+        const input = event.target.value;
+        console.log(`Handling key code ${input} at index ${activeIdx}`);
         if (activeIdx < activeRow.length) {
-            if (code >= keyCodes.A && code <= keyCodes.Z) {
-                newActiveRow[activeIdx] = {
-                    bgcolor: 'grey',
-                    code: code,
-                    char: letterMap[code]
-                }
-                activeIdx += 1;
+            const newActiveRow = activeRow.slice();
+            newActiveRow[activeIdx] = {
+                backgroundColor: 'grey',
+                char: input[input.length - 1]
             }
-        } if (activeIdx > 0) {
-            if (code === keyCodes.backspace || code === keyCodes.delete) {
-                newActiveRow[activeIdx] = {
-                    bgcolor: 'white',
-                    code: code,
-                    char: letterMap[code]
-                }
-                activeIdx -= 1;
-            }
+            setActiveRow(newActiveRow);
+            setActiveIdx(input.length);
+            console.log(`code is now ${input} and index is now ${newActiveRow[activeIdx + 1]}`);
+            return;
         }
-        setActiveRow(newActiveRow);
-        console.log(`code is now ${code} and index is now ${activeIdx}`);
+        if (activeIdx >= 0) {
+            const newActiveRow = activeRow.slice();
+            newActiveRow[activeIdx] = {
+                bgcolor: 'white',
+                char: input[input.length - 1]
+            }
+            setActiveRow(newActiveRow);
+            setActiveIdx(input.length - 1);
+            console.log(`code is now ${input} and index is now ${activeIdx}`);
+        }
     }
 
 
@@ -100,10 +100,19 @@ function App() {
             mt: 5,
       }}
       >
+          <input
+              type={"text"}
+              autoFocus={true}
+              style={{
+                  position: 'absolute',
+                  top: '-9999px',
+                  left: '-9999px',
+              }}
+              onKeyDown={code => onKeyDownHandler(code)}
+          />
           <TopBanner />
           <GuessArea allRows={allRows}
                      onClickHandler={idx => onClickHandler(idx)}
-                     onKeyDownHandler={code => onKeyDownHandler(code)}
           />
           <Keyboard />
       </Box>
