@@ -15,18 +15,18 @@ function App() {
 
     const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
-    const completedRows = [];
+    const [completedRows, setCompletedRows] = useState([]);
 
     const [activeRow, setActiveRow] = useState(new Array(dim.numGCols).fill({
         backgroundColor: 'white',
         char: ' '
     }));
 
-    const remainingRows = new Array((dim.numGRows - 1) * dim.numGCols)
+    const [remainingRows, setRemainingRows] = useState(new Array((dim.numGRows - 1) * dim.numGCols)
         .fill({
             backgroundColor: 'white',
             char: ' '
-        });
+        }));
 
     const allRows = [...completedRows, ...activeRow, ...remainingRows];
 
@@ -46,8 +46,9 @@ function App() {
 
     const onKeyDownHandler = (event) => {
         const key = event.key;
-        console.log(`Handling key ${key} at index ${activeIdx}`);
-        if (activeIdx < activeRow.length) {
+        const globalActiveIdx = activeIdx + completedRows.length;
+        console.log(`Handling key ${key} at index ${globalActiveIdx}`);
+        if (activeIdx < dim.numGCols) {
             if (key.match(/^([a-z]|[A-Z])$/)) {
                 const newActiveRow = activeRow.slice();
                 newActiveRow[activeIdx] = {
@@ -55,8 +56,8 @@ function App() {
                     char: key
                 }
                 setActiveRow(newActiveRow);
-                setActiveIdx(activeIdx < activeRow.length - 1 ? activeIdx + 1 : activeIdx);
-                console.log(`Index is now ${activeIdx + 1}`);
+                setActiveIdx(activeIdx < dim.numGCols - 1 ? activeIdx + 1 : activeIdx);
+                console.log(`Index is now ${globalActiveIdx + 1}`);
                 return;
             }
         }
@@ -69,12 +70,20 @@ function App() {
                 }
                 setActiveRow(newActiveRow);
                 setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
-                console.log(`Index is now ${activeIdx}`);
+                console.log(`Index is now ${globalActiveIdx}`);
                 return;
             }
         }
         if (key.match(/(Enter)/)) {
-
+            if ((globalActiveIdx + 1) % dim.numGCols === 0) {
+                setCompletedRows(completedRows
+                    .concat(activeRow.slice()
+                        .map(val => { return { backgroundColor: 'green', char: val.char };}))
+                );
+                setActiveRow(allRows.slice(globalActiveIdx + 1, globalActiveIdx + dim.numGCols + 1));
+                setRemainingRows(allRows.slice(globalActiveIdx + dim.numGCols + 1, allRows.length));
+                setActiveIdx(0);
+            }
         }
     }
 
