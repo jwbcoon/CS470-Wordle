@@ -1,7 +1,14 @@
 import {Grid} from "@mui/material";
 import {Box} from "@mui/material";
 import {forwardRef, Fragment} from "react";
-import dim from "../util/dimensions";
+import {
+    guessBoxSizes,
+    numGuessAreaColumns,
+    guessRowsHGap} from "../utils/sizes";
+
+import boxStyleVariants from '../utils/keyboardAndGuessAreaBoxTypes';
+import Typography from "@mui/material/Typography";
+
 
 const GuessInput = forwardRef((props, ref) => {
 
@@ -23,31 +30,30 @@ const GuessInput = forwardRef((props, ref) => {
     );
 });
 
-const GuessBox = (props) => {
+const LetterBox = (props) => {
 
-    const {backgroundColor} = props;
-    const {char} = props;
+    const {boxAttributes} = props;
 
     return (
-        <Box
-            sx={{
-                width: dim.width,
-                height: dim.height,
-                backgroundColor: backgroundColor,
-                border: 1,
-                m: 0.4,
-                p: 0
-            }}
-        >
-            {char}
+        <Box sx={{
+            ...guessBoxSizes,
+            border: 1,
+            ...boxAttributes,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }}>
+            <Typography  variant='h4' sx={{fontWeight: 'bold', color: boxAttributes.color }}>
+                {boxAttributes.letter ? boxAttributes.letter : ''}
+            </Typography>
         </Box>
-    );
+    )
 }
+
 
 const GuessArea = (props) => {
 
-    const {allRows} = props;
-    const {onClickHandler} = props;
+    const {allBoxes} = props;
     const {onKeyDownHandler} = props;
     const {onBlurHandler} = props;
     const {inputRef} = props;
@@ -55,17 +61,22 @@ const GuessArea = (props) => {
     return (
         <Fragment>
             <GuessInput onKeyDownHandler={onKeyDownHandler} onBlurHandler={onBlurHandler} ref={inputRef}/>
-            <Grid container columns={5}>
+            <Grid container
+                  rowSpacing={0.5}
+                  columns={numGuessAreaColumns}
+                  sx={{
+                      width: numGuessAreaColumns * guessBoxSizes.width + (numGuessAreaColumns - 1) * guessRowsHGap,
+                  }}
+            >
                 {
-                    allRows.map((box, idx) =>
+                    allBoxes.map((elementAttributes, idx) =>
                         <Grid item xs={1}
                               key={idx}
-                              onClick={() => onClickHandler(idx)}
                               sx={{
                                   m: 0,
                                   p: 0
                         }}>
-                            <GuessBox backgroundColor={box} char={box.char}/>
+                            <LetterBox boxAttributes={elementAttributes}/>
                         </Grid>
                     )
                 }
