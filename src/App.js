@@ -15,7 +15,9 @@ import Keyboard from "./pages/Keyboard";
 function App() {
 
     const keyboardInitKeys = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
-    const keyboardNumKeys = keyboardInitKeys.reduce((accum, ele) => accum + ele.length, 0);
+    const [submittedLetters, setSubmittedLetters] = useState([]);
+
+
 
     const initialKeyBoard = () => {
         let keys = keyboardInitKeys
@@ -32,100 +34,58 @@ function App() {
             letter: 'Enter',
             isEnterKey: true
         }]
-        keys.unshift(backspaceKey);
-        keys.push(enterKey);
+        const blankKey = [{
+            color: 'white',
+            width: 50,
+            letter: ' ',
+            isBlankKey: true
+        }]
 
-        return keys;
+        return [keys[0], backspaceKey, blankKey, keys[1], enterKey, blankKey, ...keys.slice(2)];
     }
 
-    const inputRef = useRef(null);
 
+
+    const inputRef = useRef(null); //react reference variable for onBlurHandler to access
     const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
-    const [completedRows, setCompletedRows] = useState([]);
 
+
+    const [completedRows, setCompletedRows] = useState([]); //all the rows which contain five letter entries
     const [activeRow, setActiveRow] = useState(new Array(numGuessAreaColumns).fill({
-        color: 'white',
+        ...boxStyleVariants.blankBox,
         letter: ''
-    }));
-
+    })); //the row currently accepting input
     const [remainingRows, setRemainingRows] = useState(new Array((numGuessAreaRows - 1) * numGuessAreaColumns)
         .fill({
-            color: 'white',
+            ...boxStyleVariants.blankBox,
             letter: ''
-        }));
-
-    const allBoxes = [...completedRows, ...activeRow, ...remainingRows];
-
-
-    const keyboardKeyPressedCallBack = (attrsOfKeyThatUserClicked) => {
-        console.log(`attributes of the key that was just clicked is ${JSON.stringify(attrsOfKeyThatUserClicked)}`);
-        const activeRowIdx = activeIdx + completedRows.length;
-
-        if(activeRowIdx === 0 && attrsOfKeyThatUserClicked.isBackspaceKey) {
-            return; // activeRow is empty as such, there are no letters to erase.
-        }
-        if(attrsOfKeyThatUserClicked.isBackspaceKey) {
-            const newActiveRow = activeRow.slice();
-            newActiveRow[activeRowIdx - 1] = boxStyleVariants.blankBox;
-            setActiveRow(newActiveRow);
-            setActiveIdx(activeRowIdx - 1);
-            return;
-        }
-        if(activeRowIdx === numGuessAreaColumns && attrsOfKeyThatUserClicked.isEnterKey) {
-            // evaluate user's work that is now in activeRow. The feedback boxes get
-            // stored in a 5-element array and get pushed into the completedRows.
-            // the activeRow gets reset to 5 blank boxes.
-            // the number of elements in remainingRows gets reduced by 5.
-            // if the remainingRows is empty, game is over. Display a message in the
-            // message center.
-            return;
-        }
-        if(attrsOfKeyThatUserClicked.isEnterKey) {
-            // ignore the enter key as there are not enough letters in activeRow
-            return;
-        }
-
-        if(activeRowIdx === numGuessAreaColumns) {
-            // activeRow is already full.
-            return;
-        }
+        })); //the remaining rows to enter five letter guesses into
+    const allBoxes = [...completedRows, ...activeRow, ...remainingRows]; //the total gameboard
 
 
-        const newActiveRow = activeRow.slice();
-        newActiveRow[activeRowIdx] = { ...boxStyleVariants.notEvaluated, letter: attrsOfKeyThatUserClicked.letter};
-        setActiveRow(newActiveRow);
-        setActiveIdx(activeRowIdx + 1);
-        // console.log(JSON.stringify(activeRow));
-    }
 
-    const onClickHandler = (idx) => {
+    const [dictionary, setDictionary] = useState(require('./fiveLetterWords.json'));
+    const [winWord, setWinWord] = useState(function randomWordToObj() {
+        return dictionary.words[Math.floor(Math.random() * dictionary.words.length + 1)].split('')
+            .map(letter => ({letter: letter, isFound: false, isKnown: false}));
+    });
+    console.log(winWord.map(ele => ele.letter).join(''));
 
-        console.log(`element at idx ${idx} was clicked. 
-                     It contains ${JSON.stringify(allBoxes[idx])}`)
-        if(idx > 4) return;
-        const newActiveRow = activeRow.slice();
-        newActiveRow[idx] = {
-            backgroundColor: 'yellow',
-            letter: activeRow[idx].letter
-        }
-        setActiveRow(newActiveRow);
-    };
 
     const onKeyDownHandler = (event) => {
         const key = event.key;
         const globalActiveIdx = activeIdx + completedRows.length;
-        console.log(`Handling key ${key} at index ${globalActiveIdx}`);
+
         if (activeIdx < numGuessAreaColumns) {
             if (key.match(/^([a-z]|[A-Z])$/)) {
                 const newActiveRow = activeRow.slice();
                 newActiveRow[activeIdx] = {
-                    color: 'grey',
+                    ...boxStyleVariants.notEvaluated,
                     letter: key
                 }
                 setActiveRow(newActiveRow);
                 setActiveIdx(activeIdx < numGuessAreaColumns - 1 ? activeIdx + 1 : activeIdx);
-                console.log(`Index is now ${globalActiveIdx + 1}`);
                 return;
             }
         }
@@ -134,30 +94,56 @@ function App() {
                 const newActiveRow = activeRow.slice();
                 if (activeRow[activeIdx].letter !== ' ') { //if the current space is not blank, delete it
                     newActiveRow[activeIdx] = {
-                        color: 'white',
+                        ...boxStyleVariants.blankBox,
                         letter: ' '
                     }
                 }
                 else {
                     newActiveRow[activeIdx - 1] = { //if the current space is blank, delete the previous space
-                        color: 'white',
+                        ...boxStyleVariants.blankBox,
                         letter: ' '
                     }
                     setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
                 }
                 setActiveRow(newActiveRow);
-                console.log(`Index is now ${globalActiveIdx}`);
                 return;
             }
         }
         if (key.match(/(Enter)/)) {
             if ((globalActiveIdx + 1) % numGuessAreaColumns === 0) {
+                const submitWord = activeRow.map(box => box.letter().join(''));
+                const winningWord = winWord.map(ele => ele.letter).join('')
+
+                if (submitWord.match(winningWord))
+                    //do something for winning the game!
+                    ;
+                else
+                    setWinWord(submitWord
+                        .map((letter, idx) => {
+                            if (letter === winningWord[idx])
+                                return {letter: letter, isFound: true, isKnown: true}
+                            if (winningWord.includes(letter))
+                                return {letter: letter, isFound: false, isKnown: true}
+                            return {letter: letter, isFound: false, isKnown: false}
+                        })
+                    )
+
                 setCompletedRows(completedRows
                     .concat(activeRow.slice()
-                        .map(val => { return { color: 'green', letter: val.letter };}))
+                        .map(box => {
+                            if (submitWord.match(winningWord))
+                                return {...boxStyleVariants.exactMatch, letter: box.letter};
+                            if (winningWord.includes(box.letter))
+                                return submitWord.indexOf(box.letter) === winningWord.indexOf(box.letter)
+                                     ? {...boxStyleVariants.exactMatch, letter: box.letter}
+                                     : {...boxStyleVariants.partialMatch, letter: box.letter}
+                            return {...boxStyleVariants.noMatch, letter: box.letter}
+                        }))
                 );
                 setActiveRow(allBoxes.slice(globalActiveIdx + 1, globalActiveIdx + numGuessAreaColumns + 1));
                 setRemainingRows(allBoxes.slice(globalActiveIdx + numGuessAreaColumns + 1, allBoxes.length));
+                setSubmittedLetters(submittedLetters.concat(activeRow.map(box => box.letter))
+                    .filter((box, idx, row) => idx === row.indexOf(box))); //get unique letters
                 setActiveIdx(0);
             }
         }
@@ -173,23 +159,24 @@ function App() {
     <Fragment>
       <Box
           margin='auto'
+          alignItems='center'
+          justifyContent='center'
           sx={{
               height: 600,
               width: 500,
               display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'flex-top ',
+              flexDirection: 'column'
           }}
       >
           <TopBanner />
           <GuessArea allBoxes={allBoxes}
-                     onClickHandler={idx => onClickHandler(idx)}
                      onKeyDownHandler={event => onKeyDownHandler(event)}
                      onBlurHandler={event => onBlurHandler(event)}
                      inputRef={inputRef}
           />
           <MessageCenter/>
-          <Keyboard keyboard={initialKeyBoard()} keyboardNumKeys={keyboardNumKeys} onClickCallback={keyboardKeyPressedCallBack} />
+          <Keyboard keyboard={initialKeyBoard()}
+                    submittedLetters={submittedLetters} />
       </Box>
     </Fragment>
   );

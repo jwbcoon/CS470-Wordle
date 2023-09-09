@@ -54,7 +54,6 @@ const LetterBox = (props) => {
 const GuessArea = (props) => {
 
     const {allBoxes} = props;
-    const {onClickHandler} = props;
     const {onKeyDownHandler} = props;
     const {onBlurHandler} = props;
     const {inputRef} = props;
@@ -62,7 +61,9 @@ const GuessArea = (props) => {
     return (
         <Fragment>
             <GuessInput onKeyDownHandler={onKeyDownHandler} onBlurHandler={onBlurHandler} ref={inputRef}/>
-            <Grid container columns={numGuessAreaColumns}
+            <Grid container
+                  rowSpacing={0.5}
+                  columns={numGuessAreaColumns}
                   sx={{
                       width: numGuessAreaColumns * guessBoxSizes.width + (numGuessAreaColumns - 1) * guessRowsHGap,
                   }}
@@ -71,7 +72,6 @@ const GuessArea = (props) => {
                     allBoxes.map((elementAttributes, idx) =>
                         <Grid item xs={1}
                               key={idx}
-                              onClick={() => onClickHandler(idx)}
                               sx={{
                                   m: 0,
                                   p: 0

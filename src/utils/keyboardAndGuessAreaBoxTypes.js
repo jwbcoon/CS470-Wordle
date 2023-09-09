@@ -35,7 +35,7 @@ const boxStyleVariants = {
     keyboardUnusedKey: {
         backgroundColor: '#bfc1c2',
         color: grey[900],
-        borderColor: grey['A100']
+        borderColor: grey['A100'],
     }
 };
 
