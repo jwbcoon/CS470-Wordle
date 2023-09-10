@@ -1,8 +1,8 @@
-import {Fragment, useState, useRef} from "react";
+import {useState, useRef} from "react";
 
 import GuessArea from "./pages/GuessArea";
 import TopBanner from "./pages/TopBanner";
-import {Box} from "@mui/material";
+import {Box, createTheme, ThemeProvider} from "@mui/material";
 
 import {
     numGuessAreaRows,
@@ -10,6 +10,7 @@ import {
 import boxStyleVariants from './utils/keyboardAndGuessAreaBoxTypes';
 import MessageCenter from "./pages/MessageCenter";
 import Keyboard from "./pages/Keyboard";
+import {blueGrey, grey} from "@mui/material/colors";
 import dictionary from "./fiveLetterWords.json";
 
 
@@ -49,8 +50,6 @@ function App() {
     const inputRef = useRef(null); //react reference variable for onBlurHandler to access
     const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
-
-
     const [completedRows, setCompletedRows] = useState([]); //all the rows which contain five letter entries
     const [activeRow, setActiveRow] = useState(new Array(numGuessAreaColumns).fill({
         ...boxStyleVariants.blankBox,
@@ -63,16 +62,17 @@ function App() {
         })); //the remaining rows to enter five letter guesses into
     const allBoxes = [...completedRows, ...activeRow, ...remainingRows]; //the total gameboard
 
-
-
     const dictionary = require('./fiveLetterWords.json');
     const [winWord, setWinWord] = useState(dictionary
-        .words[Math.floor(Math.random() * dictionary.words.length + 1)].split('')
+        .words.slice()[Math.floor(Math.random() * dictionary.words.length + 1)].split('')
         .map(letter => ({letter: letter, isFound: false, isKnown: false})));
+
+    const [message, setMessage] = useState('Guess within 6 tries!');
 
 
     const onKeyDownHandler = (event) => {
-        if (winWord.filter(letter => letter.isFound).length < numGuessAreaColumns - 1) {
+        if (activeIdx < numGuessAreaColumns
+            && winWord.filter(letter => letter.isFound).length < numGuessAreaColumns - 1) {
             const key = event.key;
             const globalActiveIdx = activeIdx + completedRows.length;
 
@@ -88,56 +88,66 @@ function App() {
                     return;
                 }
             }
-            if (activeIdx >= 0) {
-                if (key.match(/(Backspace)|(Delete)/)) {
-                    const newActiveRow = activeRow.slice();
-                    if (activeRow[activeIdx].letter !== ' ') { //if the current space is not blank, delete it
-                        newActiveRow[activeIdx] = {
-                            ...boxStyleVariants.blankBox,
-                            letter: ' '
-                        }
-                    } else {
-                        newActiveRow[activeIdx - 1] = { //if the current space is blank, delete the previous space
-                            ...boxStyleVariants.blankBox,
-                            letter: ' '
-                        }
-                        setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
+            if (key.match(/(Backspace)|(Delete)/)) {
+                const newActiveRow = activeRow.slice();
+                if (activeRow[activeIdx].letter !== '') { //if the current space is not blank, delete it
+                    newActiveRow[activeIdx] = {
+                        ...boxStyleVariants.blankBox,
+                        letter: ''
                     }
-                    setActiveRow(newActiveRow);
-                    return;
                 }
+                else {
+                    newActiveRow[activeIdx - 1] = { //if the current space is blank, delete the previous space
+                        ...boxStyleVariants.blankBox,
+                        letter: ''
+                    }
+                    setActiveIdx(activeIdx > 0 ? activeIdx - 1 : 0);
+                }
+                setActiveRow(newActiveRow);
+                return;
             }
             if (key.match(/(Enter)/)) {
-                if (activeIdx + 1 === numGuessAreaColumns) {
-                    const submitWord = activeRow.map(box => box.letter).join('');
-                    const winningWord = winWord.map(ele => ele.letter).join('');
+                const submitWord = activeRow.map(box => box.letter).join('');
+                const winningWord = winWord.map(ele => ele.letter).join('');
 
-                    setWinWord(winningWord.split('')
-                        .map((letter, idx) => {
-                            if (letter === submitWord[idx])
-                                return {letter: letter, isFound: true, isKnown: true}
-                            if (submitWord.includes(letter))
-                                return {letter: letter, isFound: false, isKnown: true}
-                            return {letter: letter, isFound: false, isKnown: false}
-                        })
-                    );
-                    setCompletedRows(completedRows
-                        .concat(activeRow.slice()
-                            .map(box => {
-                                if (submitWord.match(winningWord))
-                                    return {...boxStyleVariants.exactMatch, letter: box.letter};
-                                if (winningWord.includes(box.letter))
-                                    return submitWord.indexOf(box.letter) === winningWord.indexOf(box.letter)
-                                        ? {...boxStyleVariants.exactMatch, letter: box.letter}
-                                        : {...boxStyleVariants.partialMatch, letter: box.letter}
-                                return {...boxStyleVariants.noMatch, letter: box.letter}
-                            }))
-                    );
-                    setActiveRow(allBoxes.slice(globalActiveIdx + 1, globalActiveIdx + numGuessAreaColumns + 1));
-                    setRemainingRows(allBoxes.slice(globalActiveIdx + numGuessAreaColumns + 1, allBoxes.length));
-                    setSubmittedLetters(submittedLetters.concat(activeRow.map(box => box.letter))
-                        .filter((box, idx, row) => idx === row.indexOf(box))); //get unique letters
-                    setActiveIdx(0);
+                if (dictionary.words.includes(submitWord)) {
+                    if (activeIdx + 1 === numGuessAreaColumns) {
+                        setWinWord(winningWord.split('')
+                            .map((letter, idx) => {
+                                if (letter === submitWord[idx])
+                                    return {letter: letter, isFound: true, isKnown: true}
+                                if (submitWord.includes(letter))
+                                    return {letter: letter, isFound: false, isKnown: true}
+                                return {letter: letter, isFound: false, isKnown: false}
+                            })
+                        );
+                        setCompletedRows(completedRows
+                            .concat(activeRow.slice()
+                                .map(box => {
+                                    if (submitWord.match(winningWord))
+                                        return {...boxStyleVariants.exactMatch, letter: box.letter};
+                                    if (winningWord.includes(box.letter))
+                                        return submitWord.indexOf(box.letter) === winningWord.indexOf(box.letter)
+                                            ? {...boxStyleVariants.exactMatch, letter: box.letter}
+                                            : {...boxStyleVariants.partialMatch, letter: box.letter}
+                                    return {...boxStyleVariants.noMatch, letter: box.letter}
+                                }))
+                        );
+                        setActiveRow(allBoxes.slice(globalActiveIdx + 1, globalActiveIdx + numGuessAreaColumns + 1));
+                        setRemainingRows(remainingRows.slice(activeIdx + 1));
+                        setSubmittedLetters(submittedLetters.concat(activeRow.map(box => box.letter))
+                            .filter((box, idx, row) => idx === row.indexOf(box))); //get unique letters
+                        setActiveIdx(0);
+
+                        if (submitWord.match(winningWord.split('').join('')))
+                            setMessage(`Congrats! You guessed ${winningWord.split('').join('')}`
+                                + ` within ${completedRows.length / numGuessAreaColumns} tries.`);
+                        else if (remainingRows.length === 0)
+                            setMessage(`Nice try! The correct word was ${winningWord}.`);
+                    }
+                }
+                else {
+                    setMessage(`${submitWord} is not a valid word in the game dictionary.`);
                 }
             }
         }
@@ -149,8 +159,18 @@ function App() {
     }
 
 
+
     return (
-    <Fragment>
+    <ThemeProvider theme={createTheme({
+        palette: {
+            primary: {
+                main: blueGrey[400],
+                light: grey[300],
+                dark: blueGrey[500],
+                contrastText: blueGrey[0]
+            }
+        }
+    })}>
       <Box
           margin='auto'
           alignItems='center'
@@ -163,7 +183,7 @@ function App() {
           }}
       >
           <TopBanner />
-          <MessageCenter/>
+          <MessageCenter message={message}/>
           <GuessArea allBoxes={allBoxes}
                      onKeyDownHandler={event => onKeyDownHandler(event)}
                      onBlurHandler={event => onBlurHandler(event)}
@@ -172,7 +192,7 @@ function App() {
           <Keyboard keyboard={initialKeyBoard()}
                     submittedLetters={submittedLetters} />
       </Box>
-    </Fragment>
+    </ThemeProvider>
   );
 }
 
