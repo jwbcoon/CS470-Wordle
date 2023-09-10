@@ -71,11 +71,11 @@ function App() {
 
 
     const onKeyDownHandler = (event) => {
-        if (activeIdx < numGuessAreaColumns
-            && winWord.filter(letter => letter.isFound).length < numGuessAreaColumns - 1) {
-            const key = event.key;
-            const globalActiveIdx = activeIdx + completedRows.length;
+        const key = event.key;
+        const globalActiveIdx = activeIdx + completedRows.length;
 
+        if (globalActiveIdx < allBoxes.length
+            && winWord.filter(letter => letter.isFound).length < numGuessAreaColumns) {
             if (activeIdx < numGuessAreaColumns) {
                 if (key.match(/^([a-z]|[A-Z])$/)) {
                     const newActiveRow = activeRow.slice();
