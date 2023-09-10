@@ -1,6 +1,6 @@
 import Typography from "@mui/material/Typography";
 import {Fragment} from "react";
-import {Box} from "@mui/material";
+import {AppBar, Box} from "@mui/material";
 
 const TopBanner = () => {
     return (
@@ -8,11 +8,15 @@ const TopBanner = () => {
             <Box sx={{
                 height: 200,
                 display: 'flex',
-                alignContents: 'center'
+                alignContents: 'center',
+                backgroundColr: 'primary.dark',
+                p: 10
             }}>
-            <Typography variant='h4'>
-                Top banner
-            </Typography>
+                <AppBar>
+                    <Typography variant='h4'>
+                        Top banner
+                    </Typography>
+                </AppBar>
             </Box>
         </Fragment>
     )

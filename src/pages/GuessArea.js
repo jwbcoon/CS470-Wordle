@@ -67,6 +67,8 @@ const GuessArea = (props) => {
                   sx={{
                       width: numGuessAreaColumns * guessBoxSizes.width + (numGuessAreaColumns - 1) * guessRowsHGap,
                   }}
+                  paddingTop={2}
+                  paddingBottom={2}
             >
                 {
                     allBoxes.map((elementAttributes, idx) =>
