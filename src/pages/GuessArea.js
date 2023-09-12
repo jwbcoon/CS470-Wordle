@@ -41,7 +41,7 @@ const LetterBox = (props) => {
             ...boxAttributes,
             display: 'flex',
             alignItems: 'center',
-            justifyContent: 'center'
+            justifyContent: 'center',
         }}>
             <Typography  variant='h4' sx={{fontWeight: 'bold', color: boxAttributes.color }}>
                 {boxAttributes.letter ? boxAttributes.letter : ''}

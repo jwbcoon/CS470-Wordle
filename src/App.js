@@ -2,16 +2,12 @@ import {useState, useRef} from "react";
 
 import GuessArea from "./pages/GuessArea";
 import TopBanner from "./pages/TopBanner";
-import {Box, createTheme, ThemeProvider} from "@mui/material";
+import {Box, ThemeProvider} from "@mui/material";
 
-import {
-    numGuessAreaRows,
-    numGuessAreaColumns} from "./utils/sizes";
-import boxStyleVariants from './utils/keyboardAndGuessAreaBoxTypes';
+import {numGuessAreaRows, numGuessAreaColumns} from "./utils/sizes";
+import {boxStyleVariants, theme} from './utils/keyboardAndGuessAreaBoxTypes';
 import MessageCenter from "./pages/MessageCenter";
 import Keyboard from "./pages/Keyboard";
-import {blueGrey, grey} from "@mui/material/colors";
-import dictionary from "./fiveLetterWords.json";
 
 
 function App() {
@@ -19,10 +15,11 @@ function App() {
     const keyboardInitKeys = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
     const [submittedLetters, setSubmittedLetters] = useState([]);
 
-
     const initialKeyBoard = () => {
         let keys = keyboardInitKeys
-            .map(row => row.split('').map(letter => ({...boxStyleVariants.keyboardUnusedKey, letter: letter})));
+            .map(row => row.split('')
+                .map(letter => ({...boxStyleVariants.keyboardUnusedKey, letter: letter}))
+            );
         const backspaceKey = [{
             ...boxStyleVariants.keyboardUnusedKey, // you should probably create a new variant for backspace and enter keys
             width: 50,
@@ -36,7 +33,8 @@ function App() {
             isEnterKey: true
         }]
         const blankKey = [{
-            color: 'white',
+            color: theme.palette.primary.dark,
+            borderColor: theme.palette.primary.dark,
             width: 50,
             letter: ' ',
             isBlankKey: true
@@ -63,11 +61,12 @@ function App() {
     const allBoxes = [...completedRows, ...activeRow, ...remainingRows]; //the total gameboard
 
     const dictionary = require('./fiveLetterWords.json');
-    const [winWord, setWinWord] = useState(dictionary
+    const [targetWord, setTargetWord] = useState(dictionary
         .words.slice()[Math.floor(Math.random() * dictionary.words.length + 1)].split('')
         .map(letter => ({letter: letter, isFound: false, isKnown: false})));
 
     const [message, setMessage] = useState('Guess within 6 tries!');
+
 
 
     const onKeyDownHandler = (event) => {
@@ -75,7 +74,7 @@ function App() {
         const globalActiveIdx = activeIdx + completedRows.length;
 
         if (globalActiveIdx < allBoxes.length
-            && winWord.filter(letter => letter.isFound).length < numGuessAreaColumns) {
+            && targetWord.filter(letter => letter.isFound).length < numGuessAreaColumns) {
             if (activeIdx < numGuessAreaColumns) {
                 if (key.match(/^([a-z]|[A-Z])$/)) {
                     const newActiveRow = activeRow.slice();
@@ -107,47 +106,66 @@ function App() {
                 return;
             }
             if (key.match(/(Enter)/)) {
-                const submitWord = activeRow.map(box => box.letter).join('');
-                const winningWord = winWord.map(ele => ele.letter).join('');
-
-                if (dictionary.words.includes(submitWord)) {
-                    if (activeIdx + 1 === numGuessAreaColumns) {
-                        setWinWord(winningWord.split('')
-                            .map((letter, idx) => {
-                                if (letter === submitWord[idx])
-                                    return {letter: letter, isFound: true, isKnown: true}
-                                if (submitWord.includes(letter))
-                                    return {letter: letter, isFound: false, isKnown: true}
-                                return {letter: letter, isFound: false, isKnown: false}
+                const submitWordString = activeRow.map(box => box.letter).join('');
+                const targetWordString = targetWord.map(ele => ele.letter).join('');
+                const getOccurrences = word => {
+                    return word.split('')
+                        .map(letter => ({
+                                letter: letter,
+                                occurrences: word.split('')
+                                    .reduce((charCount, char) => charCount + (char === letter ? 1 : 0)
+                                        , 0)
                             })
                         );
+                }
+                let numOccurrences = getOccurrences(targetWordString);
+
+                if (dictionary.words.includes(submitWordString)) {
+                    if (activeIdx + 1 === numGuessAreaColumns) {
+                        setTargetWord(targetWordString.split('')
+                            .map((letter, idx) => {
+                                numOccurrences[idx].occurrences -= 1;
+                                if (letter === submitWordString[idx])
+                                    return {letter: letter, isFound: true, isKnown: true};
+                                if (submitWordString.includes(letter))
+                                    return {letter: letter, isFound: false, isKnown: numOccurrences[idx] >= 0};
+                                return {letter: letter, isFound: false, isKnown: false};
+                            })
+                        );
+
+                        numOccurrences = getOccurrences(targetWordString);
                         setCompletedRows(completedRows
                             .concat(activeRow.slice()
-                                .map(box => {
-                                    if (submitWord.match(winningWord))
+                                .map((box, idx) => {
+                                    if (box.letter === targetWordString[idx]) {
+                                        numOccurrences[idx].occurrences -= 1;
                                         return {...boxStyleVariants.exactMatch, letter: box.letter};
-                                    if (winningWord.includes(box.letter))
-                                        return submitWord.indexOf(box.letter) === winningWord.indexOf(box.letter)
-                                            ? {...boxStyleVariants.exactMatch, letter: box.letter}
-                                            : {...boxStyleVariants.partialMatch, letter: box.letter}
-                                    return {...boxStyleVariants.noMatch, letter: box.letter}
+                                    }
+                                    if (targetWordString.includes(box.letter)) {
+                                        numOccurrences[targetWordString.indexOf(box.letter)].occurrences -= 1;
+                                        return numOccurrences[targetWordString.indexOf(box.letter)].occurrences >= 0
+                                            ? {...boxStyleVariants.partialMatch, letter: box.letter}
+                                            : {...boxStyleVariants.noMatch, letter: box.letter};
+                                    }
+                                    return {...boxStyleVariants.noMatch, letter: box.letter};
                                 }))
                         );
                         setActiveRow(allBoxes.slice(globalActiveIdx + 1, globalActiveIdx + numGuessAreaColumns + 1));
                         setRemainingRows(remainingRows.slice(activeIdx + 1));
                         setSubmittedLetters(submittedLetters.concat(activeRow.map(box => box.letter))
-                            .filter((box, idx, row) => idx === row.indexOf(box))); //get unique letters
+                            .filter((box, idx, row) => idx === row.indexOf(box))
+                        ); //get unique letters
                         setActiveIdx(0);
 
-                        if (submitWord.match(winningWord.split('').join('')))
-                            setMessage(`Congrats! You guessed ${winningWord.split('').join('')}`
+                        if (submitWordString.match(targetWordString))
+                            setMessage(`Congrats! You guessed ${targetWordString}`
                                 + ` within ${completedRows.length / numGuessAreaColumns} tries.`);
                         else if (remainingRows.length === 0)
-                            setMessage(`Nice try! The correct word was ${winningWord}.`);
+                            setMessage(`Nice try! The correct word was ${targetWordString}.`);
                     }
                 }
                 else {
-                    setMessage(`${submitWord} is not a valid word in the game dictionary.`);
+                    setMessage(`${submitWordString} is not a valid word in the game dictionary.`);
                 }
             }
         }
@@ -161,36 +179,29 @@ function App() {
 
 
     return (
-    <ThemeProvider theme={createTheme({
-        palette: {
-            primary: {
-                main: blueGrey[400],
-                light: grey[300],
-                dark: blueGrey[500],
-                contrastText: blueGrey[0]
-            }
-        }
-    })}>
+    <ThemeProvider theme={theme}>
       <Box
-          margin='auto'
           alignItems='center'
-          justifyContent='center'
+          height='100%'
+          width='100%'
+          paddingBottom='6.5%'
           sx={{
-              height: 600,
-              width: 500,
               display: 'flex',
               flexDirection: 'column'
           }}
+          backgroundColor={theme.palette.primary.dark}
       >
-          <TopBanner />
-          <MessageCenter message={message}/>
+          <TopBanner theme={theme}/>
+          <MessageCenter message={message} theme={theme}/>
           <GuessArea allBoxes={allBoxes}
                      onKeyDownHandler={event => onKeyDownHandler(event)}
                      onBlurHandler={event => onBlurHandler(event)}
                      inputRef={inputRef}
           />
           <Keyboard keyboard={initialKeyBoard()}
-                    submittedLetters={submittedLetters} />
+                    submittedLetters={submittedLetters}
+                    theme={theme}
+          />
       </Box>
     </ThemeProvider>
   );

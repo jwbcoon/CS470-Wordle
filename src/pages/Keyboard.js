@@ -37,7 +37,6 @@ const Keyboard = (props) => {
     const numColumns = keyboard[keyboard.reduce((maxIdx, ele, idx, arr) =>
         (ele.length > arr[maxIdx].length) ? idx : maxIdx, 0)]
         .length + 1;
-    //console.log(`numcolumns: ${JSON.stringify(keyboard)}`);
 
     return (
         <Fragment>
@@ -54,7 +53,7 @@ const Keyboard = (props) => {
                     keyboard.map(row => row.map((keyAttributes, idx) =>
                         <Grid item
                               key={idx}
-                              xs={keyAttributes.letter === ' ' ? false : 1}
+                              xs={keyAttributes.letter === '' ? false : 1}
                               sx={{mb: 1, p: 0}}
                               onClick={() => onClickCallback(keyAttributes)}
                         >

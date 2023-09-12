@@ -1,4 +1,24 @@
 import {green, grey, orange} from '@mui/material/colors';
+import {createTheme} from "@mui/material";
+
+
+
+const theme = createTheme({
+    palette: {
+        primary: {
+            main: '#4e7598',
+            light: '#265f8a',
+            dark: '#0e3251',
+            contrastText: '#fee8cb'
+        },
+        secondary: {
+            main: '#f1a776',
+            light: '#f9c9ab',
+            dark: '#d534ba',
+            contrastText: '#f9abe8'
+        }
+    }
+});
 
 const boxStyleVariants = {
     exactMatch: {
@@ -21,8 +41,8 @@ const boxStyleVariants = {
     },
 
     blankBox: {
-        backgroundColor: grey[50],
-        color: grey[900],
+        backgroundColor: theme.palette.primary.light,
+        color: theme.palette.primary.light,
         borderColor: grey[400]
     },
 
@@ -39,4 +59,6 @@ const boxStyleVariants = {
     }
 };
 
-export default boxStyleVariants;
+export {
+    boxStyleVariants, theme
+};
