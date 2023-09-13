@@ -11,7 +11,7 @@ import {Grid} from "@mui/material";
 
 const KeyboardLetterBox = (props) => {
 
-    const {keyAttributes, submittedLetters} = props;
+    const {keyAttributes, submittedLetters, theme} = props;
 
     // console.log(`keyboardBoxSizes ${JSON.stringify(keyAttributes)}`);
 
@@ -24,7 +24,9 @@ const KeyboardLetterBox = (props) => {
         }}>
             <Typography ml={1} mb={1} p={0}
                         variant={keyAttributes.letter.length > 1 ? 'h7' : 'h5'}
-                        sx={{ color: submittedLetters.includes(keyAttributes.letter) ? 'yellow' : keyAttributes.color }}>
+                        sx={{ color: submittedLetters.includes(keyAttributes.letter)
+                                ? theme.palette.secondary.dark
+                                : keyAttributes.color }}>
                 {keyAttributes.letter}
             </Typography>
         </Box>
@@ -33,7 +35,7 @@ const KeyboardLetterBox = (props) => {
 
 const Keyboard = (props) => {
 
-    const {keyboard, onClickCallback, submittedLetters} = props;
+    const {keyboard, onClickCallback, submittedLetters, theme} = props;
     const numColumns = keyboard[keyboard.reduce((maxIdx, ele, idx, arr) =>
         (ele.length > arr[maxIdx].length) ? idx : maxIdx, 0)]
         .length + 1;
@@ -57,7 +59,9 @@ const Keyboard = (props) => {
                               sx={{mb: 1, p: 0}}
                               onClick={() => onClickCallback(keyAttributes)}
                         >
-                            <KeyboardLetterBox keyAttributes={keyAttributes} submittedLetters={submittedLetters}/>
+                            <KeyboardLetterBox keyAttributes={keyAttributes}
+                                               submittedLetters={submittedLetters}
+                                               theme={theme}/>
                         </Grid>
                     ))
                 }

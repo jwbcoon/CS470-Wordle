@@ -43,6 +43,20 @@ function App() {
         return [keys[0], backspaceKey, blankKey, keys[1], enterKey, blankKey, keys[2]];
     }
 
+    const initialRows = rowType => {
+        if (rowType === 'active')
+            return new Array(numGuessAreaColumns).fill({
+                ...boxStyleVariants.blankBox,
+                letter: ''
+            })
+        else if (rowType === 'remaining')
+            return new Array((numGuessAreaRows - 1) * numGuessAreaColumns)
+                .fill({
+                    ...boxStyleVariants.blankBox,
+                    letter: ''
+                });
+    }
+
 
 
     const inputRef = useRef(null); //react reference variable for onBlurHandler to access
@@ -159,7 +173,7 @@ function App() {
 
                         if (submitWordString.match(targetWordString))
                             setMessage(`Congrats! You guessed ${targetWordString}`
-                                + ` within ${completedRows.length / numGuessAreaColumns} tries.`);
+                                + ` within ${(completedRows.length / numGuessAreaColumns) + 1} tries.`);
                         else if (remainingRows.length === 0)
                             setMessage(`Nice try! The correct word was ${targetWordString}.`);
                     }
