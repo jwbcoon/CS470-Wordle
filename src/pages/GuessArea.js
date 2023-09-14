@@ -6,14 +6,12 @@ import {
     numGuessAreaColumns,
     guessRowsHGap} from "../utils/sizes";
 
-import boxStyleVariants from '../utils/keyboardAndGuessAreaBoxTypes';
 import Typography from "@mui/material/Typography";
 
 
 const GuessInput = forwardRef((props, ref) => {
 
-    const {onKeyDownHandler} = props;
-    const {onBlurHandler} = props;
+    const {onKeyDownHandler, onBlurHandler} = props;
 
     return (
         <input
@@ -53,10 +51,7 @@ const LetterBox = (props) => {
 
 const GuessArea = (props) => {
 
-    const {allBoxes} = props;
-    const {onKeyDownHandler} = props;
-    const {onBlurHandler} = props;
-    const {inputRef} = props;
+    const {allBoxes, onKeyDownHandler, onBlurHandler, inputRef} = props;
 
     return (
         <Fragment>

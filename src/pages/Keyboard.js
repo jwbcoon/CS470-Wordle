@@ -5,15 +5,12 @@ import {
     keyboardBoxSizes,
     keyboardRowsHGap} from "../utils/sizes";
 
-import boxStyleVariants from '../utils/keyboardAndGuessAreaBoxTypes';
 import Typography from "@mui/material/Typography";
 import {Grid} from "@mui/material";
 
 const KeyboardLetterBox = (props) => {
 
     const {keyAttributes, submittedLetters, theme} = props;
-
-    // console.log(`keyboardBoxSizes ${JSON.stringify(keyAttributes)}`);
 
     return (
         <Box

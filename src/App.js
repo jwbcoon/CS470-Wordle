@@ -15,7 +15,7 @@ function App() {
     const keyboardInitKeys = ['qwertyuiop', 'asdfghjkl', 'zxcvbnm'];
     const [submittedLetters, setSubmittedLetters] = useState([]);
 
-    const initialKeyBoard = () => {
+    const initializeKeyBoard = () => {
         let keys = keyboardInitKeys
             .map(row => row.split('')
                 .map(letter => ({...boxStyleVariants.keyboardUnusedKey, letter: letter}))
@@ -43,19 +43,16 @@ function App() {
         return [keys[0], backspaceKey, blankKey, keys[1], enterKey, blankKey, keys[2]];
     }
 
-    const initialRows = rowType => {
-        if (rowType === 'active')
-            return new Array(numGuessAreaColumns).fill({
-                ...boxStyleVariants.blankBox,
-                letter: ''
-            })
-        else if (rowType === 'remaining')
-            return new Array((numGuessAreaRows - 1) * numGuessAreaColumns)
-                .fill({
-                    ...boxStyleVariants.blankBox,
-                    letter: ''
-                });
-    }
+    const initializeActiveRows = () => new Array(numGuessAreaColumns).fill({
+        ...boxStyleVariants.blankBox,
+        letter: ''
+    });
+
+    const initializeRemainingRows = () => new Array((numGuessAreaRows - 1) * numGuessAreaColumns)
+        .fill({
+            ...boxStyleVariants.blankBox,
+            letter: ''
+        });
 
 
 
@@ -63,15 +60,8 @@ function App() {
     const [activeIdx, setActiveIdx] = useState(0); //index of the GuessArea GuessBox currently being typed into
 
     const [completedRows, setCompletedRows] = useState([]); //all the rows which contain five letter entries
-    const [activeRow, setActiveRow] = useState(new Array(numGuessAreaColumns).fill({
-        ...boxStyleVariants.blankBox,
-        letter: ''
-    })); //the row currently accepting input
-    const [remainingRows, setRemainingRows] = useState(new Array((numGuessAreaRows - 1) * numGuessAreaColumns)
-        .fill({
-            ...boxStyleVariants.blankBox,
-            letter: ''
-        })); //the remaining rows to enter five letter guesses into
+    const [activeRow, setActiveRow] = useState(initializeActiveRows); //the row currently accepting input
+    const [remainingRows, setRemainingRows] = useState(initializeRemainingRows); //the remaining rows to enter five letter guesses into
     const allBoxes = [...completedRows, ...activeRow, ...remainingRows]; //the total gameboard
 
     const dictionary = require('./fiveLetterWords.json');
@@ -212,7 +202,7 @@ function App() {
                      onBlurHandler={event => onBlurHandler(event)}
                      inputRef={inputRef}
           />
-          <Keyboard keyboard={initialKeyBoard()}
+          <Keyboard keyboard={initializeKeyBoard()}
                     submittedLetters={submittedLetters}
                     theme={theme}
           />
